@@ -49,8 +49,17 @@ def main() -> None:
     else:
         cfg = Config(mode="ascii", color=True)
 
+    quality = 480
+    if source.is_url(link):
+        print("\nQualidade do download:")
+        print("  [1] 360p  (mais rápido, menos chance de falhar)")
+        print("  [2] 480p  (equilíbrio — recomendado)")
+        print("  [3] 720p  (melhor detalhe, download maior)")
+        q = ask("Escolha [Enter = 2]: ", "2")
+        quality = {"1": 360, "2": 480, "3": 720}.get(q, 480)
+
     print("\nPreparando… (o download pode levar alguns segundos)\n")
-    path, is_tmp = source.resolve(link)
+    path, is_tmp = source.resolve(link, quality)
     try:
         play(path, cfg, loop=loop, audio=som)
     finally:
