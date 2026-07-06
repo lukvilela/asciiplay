@@ -34,19 +34,26 @@ def main() -> None:
     print("  [1] ASCII (preto e branco)")
     print("  [2] ASCII colorido")
     print("  [3] Vídeo em blocos coloridos  (mais parecido com vídeo)")
+    print("  [4] Bad Apple  (preto e branco, tela cheia, alto contraste)")
     estilo = ask("Escolha [Enter = 3]: ", "3")
 
     som = ask("Tocar com som? [S/n]: ", "s").lower() != "n"
-    fill = ask("Preencher a tela toda? [S/n]: ", "s").lower() != "n"
+    if estilo == "4":
+        fill = True  # o preset já preenche a tela
+    else:
+        fill = ask("Preencher a tela toda? [S/n]: ", "s").lower() != "n"
     loop = ask("Repetir em loop? [s/N]: ", "n").lower() == "s"
 
-    mode, color = "ascii", False
-    if estilo == "2":
-        color = True
-    elif estilo == "3":
-        mode = "half"
-
-    cfg = Config(mode=mode, color=color, fill=fill, edges=(estilo != "3"))
+    if estilo == "4":
+        # preset otimizado pra silhuetas P&B (Bad Apple e afins)
+        cfg = Config(mode="ascii", color=False, fill=True, ramp="blocks", contrast=1.4)
+    else:
+        mode, color = "ascii", False
+        if estilo == "2":
+            color = True
+        elif estilo == "3":
+            mode = "half"
+        cfg = Config(mode=mode, color=color, fill=fill, edges=(estilo != "3"))
 
     print("\nPreparando… (o download pode levar alguns segundos)\n")
     path, is_tmp = source.resolve(link)
