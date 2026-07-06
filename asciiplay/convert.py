@@ -36,14 +36,20 @@ class Config:
     gamma: float = 1.0        # >1 clareia os médios
     contrast: float = 1.0     # 1 = neutro
     edges: bool = False       # realça contornos (modo ascii)
+    fill: bool = False        # estica pra preencher a tela toda (ignora proporção)
+    height: int = 0           # linhas de texto alvo (0 = deriva da proporção)
 
 
-def _target_size(fw: int, fh: int, width: int, mode: str) -> tuple[int, int]:
-    if mode == "half":
-        rows = max(2, round(width * (fh / fw)))
-        return width, rows + (rows % 2)
-    rows = max(1, round(width * (fh / fw) * 0.5))
-    return width, rows
+def _target_size(fw: int, fh: int, cfg: "Config") -> tuple[int, int]:
+    # altura explícita (modo fill / height): amostra exatamente esse tanto de linhas
+    if cfg.height > 0:
+        rows_px = cfg.height * 2 if cfg.mode == "half" else cfg.height
+        return cfg.width, rows_px
+    if cfg.mode == "half":
+        rows = max(2, round(cfg.width * (fh / fw)))
+        return cfg.width, rows + (rows % 2)
+    rows = max(1, round(cfg.width * (fh / fw) * 0.5))
+    return cfg.width, rows
 
 
 def _adjust_gray(gray: np.ndarray, cfg: Config) -> np.ndarray:
@@ -145,7 +151,7 @@ def _render_half(frame: np.ndarray, cfg: Config) -> str:
 
 def render(frame: np.ndarray, cfg: Config) -> str:
     fh, fw = frame.shape[:2]
-    cols, rows = _target_size(fw, fh, cfg.width, cfg.mode)
+    cols, rows = _target_size(fw, fh, cfg)
     resized = cv2.resize(frame, (cols, rows), interpolation=cv2.INTER_AREA)
     if cfg.mode == "half":
         if cfg.normalize:

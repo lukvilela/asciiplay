@@ -19,13 +19,19 @@ def open_video(path: str):
 
 
 def fit_width(cfg: Config, fw: int, fh: int) -> None:
-    """Escolhe a largura pra caber no terminal em LARGURA e ALTURA (sem rolar a tela)."""
+    """Dimensiona pro terminal. Padrão: cabe em largura E altura mantendo a proporção.
+    Com fill=True: estica pra preencher a tela inteira (ignora a proporção)."""
     cols, rows = term.size()
     avail_rows = max(4, rows - 1)
+    if cfg.fill:
+        cfg.width = cols if cfg.width <= 0 else min(cfg.width, cols)
+        cfg.height = avail_rows
+        return
     # linhas de texto ≈ width * (fh/fw) * 0.5  → largura máxima que cabe na altura
     w_by_rows = int(avail_rows * 2.0 * fw / max(1, fh))
     want = cfg.width if cfg.width > 0 else cols
     cfg.width = max(10, min(want, cols, w_by_rows))
+    cfg.height = 0
 
 
 # Sequências de "synchronized output" (o terminal desenha o frame de uma vez → sem flicker).
