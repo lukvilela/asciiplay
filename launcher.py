@@ -32,28 +32,22 @@ def main() -> None:
 
     print("\nEstilo:")
     print("  [1] ASCII (preto e branco)")
-    print("  [2] ASCII colorido")
-    print("  [3] Vídeo em blocos coloridos  (mais parecido com vídeo)")
-    print("  [4] Bad Apple  (preto e branco, tela cheia, alto contraste)")
-    estilo = ask("Escolha [Enter = 3]: ", "3")
+    print("  [2] ASCII colorido            (recomendado — leve e fluido)")
+    print("  [3] Vídeo em blocos coloridos (mais bonito, porém mais pesado)")
+    print("  [4] Bad Apple                 (preto e branco, alto contraste)")
+    estilo = ask("Escolha [Enter = 2]: ", "2")
 
     som = ask("Tocar com som? [S/n]: ", "s").lower() != "n"
-    if estilo == "4":
-        fill = True  # o preset já preenche a tela
-    else:
-        fill = ask("Preencher a tela toda? [S/n]: ", "s").lower() != "n"
     loop = ask("Repetir em loop? [s/N]: ", "n").lower() == "s"
 
     if estilo == "4":
-        # preset otimizado pra silhuetas P&B (Bad Apple e afins)
-        cfg = Config(mode="ascii", color=False, fill=True, ramp="blocks", contrast=1.4)
+        cfg = Config(mode="ascii", color=False, ramp="blocks", contrast=1.4)
+    elif estilo == "3":
+        cfg = Config(mode="half")
+    elif estilo == "1":
+        cfg = Config(mode="ascii", color=False)
     else:
-        mode, color = "ascii", False
-        if estilo == "2":
-            color = True
-        elif estilo == "3":
-            mode = "half"
-        cfg = Config(mode=mode, color=color, fill=fill, edges=(estilo != "3"))
+        cfg = Config(mode="ascii", color=True)
 
     print("\nPreparando… (o download pode levar alguns segundos)\n")
     path, is_tmp = source.resolve(link)

@@ -36,15 +36,9 @@ class Config:
     gamma: float = 1.0        # >1 clareia os médios
     contrast: float = 1.0     # 1 = neutro
     edges: bool = False       # realça contornos (modo ascii)
-    fill: bool = False        # estica pra preencher a tela toda (ignora proporção)
-    height: int = 0           # linhas de texto alvo (0 = deriva da proporção)
 
 
 def _target_size(fw: int, fh: int, cfg: "Config") -> tuple[int, int]:
-    # altura explícita (modo fill / height): amostra exatamente esse tanto de linhas
-    if cfg.height > 0:
-        rows_px = cfg.height * 2 if cfg.mode == "half" else cfg.height
-        return cfg.width, rows_px
     if cfg.mode == "half":
         rows = max(2, round(cfg.width * (fh / fw)))
         return cfg.width, rows + (rows % 2)

@@ -19,19 +19,20 @@ def open_video(path: str):
 
 
 def fit_width(cfg: Config, fw: int, fh: int) -> None:
-    """Dimensiona pro terminal. Padrão: cabe em largura E altura mantendo a proporção.
-    Com fill=True: estica pra preencher a tela inteira (ignora a proporção)."""
+    """Maior largura que cabe no terminal (largura E altura) mantendo a proporção.
+    Modos pesados (cor/blocos) ganham um teto pra manter a fluidez — a cor/os blocos
+    geram muito dado por frame, então limitar o tamanho evita travar."""
     cols, rows = term.size()
     avail_rows = max(4, rows - 1)
-    if cfg.fill:
-        cfg.width = cols if cfg.width <= 0 else min(cfg.width, cols)
-        cfg.height = avail_rows
-        return
-    # linhas de texto ≈ width * (fh/fw) * 0.5  → largura máxima que cabe na altura
     w_by_rows = int(avail_rows * 2.0 * fw / max(1, fh))
+    if cfg.mode == "half":
+        cap = 100
+    elif cfg.color:
+        cap = 150
+    else:
+        cap = 100000  # cinza é leve, pode ocupar a tela toda
     want = cfg.width if cfg.width > 0 else cols
-    cfg.width = max(10, min(want, cols, w_by_rows))
-    cfg.height = 0
+    cfg.width = max(10, min(want, cols, w_by_rows, cap))
 
 
 # Sequências de "synchronized output" (o terminal desenha o frame de uma vez → sem flicker).
@@ -47,6 +48,11 @@ def play(path: str, cfg: Config, fps_override: float | None = None, loop: bool =
     fw = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 16
     fh = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 9
     fit_width(cfg, fw, fh)
+
+    # geometria pra centralizar o vídeo na tela
+    cols, trows = term.size()
+    avail_rows = max(4, trows - 1)
+    left = max(0, (cols - cfg.width) // 2)
 
     aud = None
     if audio:
@@ -74,8 +80,15 @@ def play(path: str, cfg: Config, fps_override: float | None = None, loop: bool =
                 # se estiver muito atrasado, pula o desenho deste frame (mantém o ritmo)
                 if elapsed > target + 1.5 / fps:
                     continue
-                # frame desenhado de forma atômica → sem flicker/tearing
-                sys.stdout.write(_SYNC_ON + "\x1b[H" + render(frame, cfg) + _SYNC_OFF)
+                # centraliza e desenha de forma atômica (sem flicker/tearing)
+                lines = render(frame, cfg).split("\n")
+                top = max(0, (avail_rows - len(lines)) // 2)
+                parts = [_SYNC_ON]
+                for i, ln in enumerate(lines):
+                    parts.append("\x1b[%d;%dH" % (top + i + 1, left + 1))
+                    parts.append(ln)
+                parts.append(_SYNC_OFF)
+                sys.stdout.write("".join(parts))
                 sys.stdout.flush()
                 sleep = frame_no / fps - (time.perf_counter() - start)
                 if sleep > 0:

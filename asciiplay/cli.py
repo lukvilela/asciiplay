@@ -20,7 +20,6 @@ def _add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--gamma", type=float, default=1.0, help="clareia/escurece os médios (ex.: 1.4)")
     p.add_argument("--contrast", type=float, default=1.0, help="contraste extra (ex.: 1.3)")
     p.add_argument("--no-normalize", dest="normalize", action="store_false", help="desliga o auto-contraste por frame")
-    p.add_argument("-F", "--fill", action="store_true", help="estica pra preencher a tela toda (ignora a proporção)")
 
 
 def _cfg(a: argparse.Namespace) -> Config:
@@ -34,7 +33,6 @@ def _cfg(a: argparse.Namespace) -> Config:
         gamma=a.gamma,
         contrast=a.contrast,
         edges=a.edges,
-        fill=a.fill,
     )
 
 
