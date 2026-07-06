@@ -35,6 +35,22 @@ python meuvideo.py            # roda a animação, sem dependências (só stdlib
 python meuvideo.py --loop
 ```
 
+## Modo fácil (executável)
+
+Pra quem não quer mexer no terminal: um launcher que pergunta o link e as opções.
+
+```bash
+python launcher.py          # roda o assistente interativo
+```
+
+Para gerar um **`.exe`** (Windows) que abre sozinho e é só colar o link:
+
+```bash
+build_exe.bat               # gera dist\AsciiVideo.exe
+```
+
+O `.exe` é grande (~100 MB, traz Python + libs) e na primeira vez baixa o ffmpeg embutido (uma vez). Dá pra enviar o arquivo pronto para outra pessoa usar sem instalar nada.
+
 ## Opções
 
 | Opção | O que faz |

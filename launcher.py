@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""Launcher interativo — feito pra virar um .exe. Ao rodar, pergunta o link e as
+opções (estilo, som, preencher tela) e toca o vídeo em ASCII no terminal."""
+
+import sys
+
+from asciiplay import source
+from asciiplay.convert import Config
+from asciiplay.player import play
+
+BANNER = r"""
+   __ _  ___  ___(_)(_)  _ __  | | __ _ _   _
+  / _` |/ __|/ __| || | | '_ \ | |/ _` | | | |
+ | (_| |\__ \ (__| || | | |_) || | (_| | |_| |
+  \__,_||___/\___|_||_| | .__/ |_|\__,_|\__, |
+                        |_|             |___/
+       vídeo do YouTube  ->  ASCII no terminal
+"""
+
+
+def ask(prompt: str, default: str) -> str:
+    v = input(prompt).strip()
+    return v or default
+
+
+def main() -> None:
+    print(BANNER)
+    link = input("Cole o link do YouTube (ou o caminho de um .mp4): ").strip()
+    if not link:
+        print("Nada informado. Saindo.")
+        return
+
+    print("\nEstilo:")
+    print("  [1] ASCII (preto e branco)")
+    print("  [2] ASCII colorido")
+    print("  [3] Vídeo em blocos coloridos  (mais parecido com vídeo)")
+    estilo = ask("Escolha [Enter = 3]: ", "3")
+
+    som = ask("Tocar com som? [S/n]: ", "s").lower() != "n"
+    fill = ask("Preencher a tela toda? [S/n]: ", "s").lower() != "n"
+    loop = ask("Repetir em loop? [s/N]: ", "n").lower() == "s"
+
+    mode, color = "ascii", False
+    if estilo == "2":
+        color = True
+    elif estilo == "3":
+        mode = "half"
+
+    cfg = Config(mode=mode, color=color, fill=fill, edges=(estilo != "3"))
+
+    print("\nPreparando… (o download pode levar alguns segundos)\n")
+    path, is_tmp = source.resolve(link)
+    try:
+        play(path, cfg, loop=loop, audio=som)
+    finally:
+        if is_tmp:
+            import os
+
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
+    except Exception as e:  # noqa: BLE001
+        print(f"\nOps, algo deu errado: {e}")
+    # mantém a janela aberta quando aberto por duplo-clique (.exe)
+    try:
+        input("\nAcabou. Pressione Enter para fechar…")
+    except EOFError:
+        pass

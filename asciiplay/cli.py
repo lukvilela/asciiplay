@@ -9,7 +9,7 @@ from .convert import RAMPS, Config
 
 def _add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("video", help="caminho do .mp4 OU um link (YouTube etc.)")
-    p.add_argument("-q", "--quality", type=int, default=480, help="qualidade máx. ao baixar de link (altura em px)")
+    p.add_argument("-q", "--quality", type=int, default=720, help="qualidade máx. ao baixar de link (altura em px)")
     p.add_argument("-w", "--width", type=int, default=0, help="largura em colunas (0 = largura do terminal)")
     p.add_argument("-m", "--mode", choices=["ascii", "half"], default="ascii", help="ascii (texto) ou half (meio-bloco colorido)")
     p.add_argument("-r", "--ramp", choices=list(RAMPS.keys()), default="simple", help="conjunto de caracteres (modo ascii)")
