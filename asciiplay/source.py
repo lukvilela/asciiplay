@@ -46,6 +46,11 @@ def download(url: str, quality: int = 720) -> str:
         "no_warnings": True,
         "noprogress": True,
         "merge_output_format": "mp4",
+        # resiliência contra conexão instável / limitação do YouTube
+        "retries": 20,
+        "fragment_retries": 20,
+        "socket_timeout": 60,
+        "concurrent_fragment_downloads": 4,
     }
     if ffdir:
         # alta resolução: melhor vídeo + melhor áudio, juntados pelo ffmpeg
@@ -55,9 +60,19 @@ def download(url: str, quality: int = 720) -> str:
         # sem ffmpeg: um único arquivo progressivo
         opts["format"] = f"best[height<={quality}][ext=mp4]/best[height<={quality}]/best"
 
-    print("Baixando o vídeo do link…")
-    with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+    print("Baixando o vídeo do link… (pode levar um tempinho)")
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+    except Exception as e:  # noqa: BLE001
+        msg = str(e)
+        if "timed out" in msg or "timeout" in msg or "Connection" in msg or "network" in msg:
+            raise SystemExit(
+                "O download caiu no meio (conexão instável ou o YouTube limitou a velocidade). "
+                "Tente de novo — costuma funcionar na 2ª/3ª vez. Se persistir, tente um vídeo menor "
+                "ou uma qualidade menor."
+            ) from e
+        raise SystemExit(f"Não consegui baixar esse link: {msg}") from e
 
     files = [os.path.join(tmpdir, f) for f in os.listdir(tmpdir)]
     files = [f for f in files if os.path.isfile(f)]
