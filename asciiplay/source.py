@@ -51,6 +51,9 @@ def download(url: str, quality: int = 720) -> str:
         "fragment_retries": 20,
         "socket_timeout": 60,
         "concurrent_fragment_downloads": 4,
+        "extractor_retries": 3,
+        # tenta vários "clients" do YouTube — evita o HTTP 403 Forbidden nos dados
+        "extractor_args": {"youtube": {"player_client": ["tv", "web_safari", "ios", "android", "web"]}},
     }
     if ffdir:
         # alta resolução: melhor vídeo + melhor áudio, juntados pelo ffmpeg
@@ -66,11 +69,15 @@ def download(url: str, quality: int = 720) -> str:
             info = ydl.extract_info(url, download=True)
     except Exception as e:  # noqa: BLE001
         msg = str(e)
+        if "403" in msg or "Forbidden" in msg:
+            raise SystemExit(
+                "O YouTube bloqueou o download (403). Tente de novo — costuma passar na 2ª tentativa. "
+                "Se insistir, atualize o yt-dlp:  pip install -U yt-dlp"
+            ) from e
         if "timed out" in msg or "timeout" in msg or "Connection" in msg or "network" in msg:
             raise SystemExit(
                 "O download caiu no meio (conexão instável ou o YouTube limitou a velocidade). "
-                "Tente de novo — costuma funcionar na 2ª/3ª vez. Se persistir, tente um vídeo menor "
-                "ou uma qualidade menor."
+                "Tente de novo — costuma funcionar na 2ª/3ª vez. Se persistir, tente uma qualidade menor."
             ) from e
         raise SystemExit(f"Não consegui baixar esse link: {msg}") from e
 
