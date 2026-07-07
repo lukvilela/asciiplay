@@ -56,6 +56,12 @@ def main(argv: list[str] | None = None) -> None:
     p_exp.add_argument("-o", "--output", default="video_ascii.py", help="arquivo de saída (.py)")
     p_exp.add_argument("--max-frames", type=int, default=None, help="limite de frames (controla o tamanho do arquivo)")
 
+    p_gif = sub.add_parser("gif", help="gera um GIF animado do ASCII (bom pra README)")
+    _add_common(p_gif)
+    p_gif.add_argument("-o", "--output", default="demo.gif", help="arquivo de saída (.gif)")
+    p_gif.add_argument("--gif-fps", type=int, default=12, help="fps do GIF (padrão 12)")
+    p_gif.add_argument("--seconds", type=float, default=6.0, help="duração aproximada em segundos")
+
     a = parser.parse_args(argv)
 
     import os as _os
@@ -77,6 +83,11 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  Rode com:  python {a.output}   (ou  python {a.output} --loop)")
             if mb > 5:
                 print("  Dica: arquivo grande. Use --width menor, --max-frames ou --fps p/ reduzir.")
+        elif a.cmd == "gif":
+            from .gif import to_gif
+
+            info = to_gif(path, a.output, _cfg(a), gif_fps=a.gif_fps, seconds=a.seconds)
+            print(f"✓ Gerado {a.output} — {info['frames']} frames ({info['bytes'] / 1_048_576:.1f} MB).")
     finally:
         if is_tmp:
             try:

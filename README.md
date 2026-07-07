@@ -1,5 +1,7 @@
 # 🎞️ asciiplay — vídeo em ASCII no terminal
 
+<p align="center"><img src="demo.gif" alt="asciiplay — demonstração" width="640"></p>
+
 Pega um `.mp4` e reproduz como **arte ASCII no próprio terminal**. Também consegue **exportar o vídeo como um script Python autônomo** que se reproduz sozinho — ou seja, o vídeo vira código.
 
 ## Como funciona
@@ -25,6 +27,13 @@ python -m asciiplay play video.mp4 -m half         # meio-bloco (cara de vídeo)
 python -m asciiplay play video.mp4 -w 120 --loop   # largura fixa, em loop
 python -m asciiplay play video.mp4 -a              # com áudio
 python -m asciiplay play "https://youtu.be/XXXX"   # direto de um link (YouTube etc.)
+```
+
+Gerar um GIF (bom pra README/redes):
+
+```bash
+python -m asciiplay gif video.mp4 -c -o demo.gif
+python -m asciiplay gif "https://youtu.be/XXXX" -c --seconds 6
 ```
 
 Exportar como script autônomo (o vídeo "vira código"):
